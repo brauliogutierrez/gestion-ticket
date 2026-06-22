@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 
 // ─── Endpoint del Apps Script de Google Sheets ─────────────────────────────
 // Reemplaza esta URL con la URL de despliegue de tu Apps Script.
-const API_URL = "https://script.google.com/macros/s/AKfycbzkgjuEj5qCTQGneKH7sSjKZk90UngaxTTRqNKWOovVAdlj5_s3cc8UyCgdG6e4-EnhSA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzJdg1shbLaGcIQrUPxt3KmlbCZmAYoxOglY6Sumb7x8x1yo_DdIckTi9X-bbaIdA8B/exec";
 
 // ─── Iconos SVG inline ─────────────────────────────────────────────────────
 
