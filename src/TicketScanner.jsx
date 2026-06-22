@@ -305,32 +305,28 @@ export default function TicketScanner() {
 
       const fileType = imageFile.type; // ej: "image/jpeg"
 
-      // PASO 2: POST a la API de Apps Script con el payload { imagenB64, tipoMime }.
-      // La API lee el ticket con OCR, extrae fecha_pago y hora_pago e inserta la
-      // fila ordenada cronológicamente en Google Sheets.
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      // PASO 2: POST a la API de Apps Script con mode: "no-cors" y Content-Type: "text/plain".
+      // Esto evita el preflight CORS que bloquea las peticiones desde Vercel/navegador.
+      // NOTA: con no-cors la respuesta es opaca (no se puede leer el body),
+      // por lo que mostramos éxito optimistamente si el fetch no lanza excepción.
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",                  // Evita bloqueos de origen cruzado
+        headers: {
+          "Content-Type": "text/plain",   // Salta el pre-check estricto de CORS
+        },
         body: JSON.stringify({ imagenB64: base64Clean, tipoMime: fileType }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
-      }
-
-      const json = await response.json();
-
-      if (json.status === 'success') {
-        setExtractedData({
-          fecha_pago: json.fecha_pago,
-          hora_pago:  json.hora_pago,
-          matricula:  json.matricula,
-          gasto:      json.gasto,
-        });
-        setUiState('success');
-      } else {
-        throw new Error(json.message || 'La API no pudo procesar el ticket');
-      }
+      // Con no-cors no podemos leer la respuesta → mostramos éxito si no hubo error de red.
+      // Los datos extraídos no son devueltos; mostramos confirmación de envío correcto.
+      setExtractedData({
+        fecha_pago: '—',
+        hora_pago:  '—',
+        matricula:  '—',
+        gasto:      '—',
+      });
+      setUiState('success');
     } catch (err) {
       setErrorMsg(err.message || 'Error desconocido. Inténtalo de nuevo.');
       setUiState('error');
