@@ -414,13 +414,14 @@ export default function TicketScanner() {
 
       const fileType = imageFile.type; // ej: "image/jpeg"
 
-      // PASO 2: POST estándar a Apps Script.
-      // Google Apps Script devuelve Access-Control-Allow-Origin: * por defecto
-      // cuando el despliegue tiene acceso "Cualquier persona".
-      // Usamos application/json para que el script pueda leer e.postData.contents.
+      // PASO 2: POST a Apps Script con Content-Type: text/plain.
+      // "text/plain" es una "simple request" → el navegador NO envía preflight OPTIONS,
+      // evitando el bloqueo CORS. Apps Script recibe el body en e.postData.contents
+      // y puede parsearlo con JSON.parse() aunque el tipo sea text/plain.
+      // Al NO usar mode:"no-cors", la respuesta sigue siendo legible.
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ imagenB64: base64Clean, tipoMime: fileType }),
       });
 
