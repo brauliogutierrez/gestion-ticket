@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 
 // ─── Endpoint del Apps Script de Google Sheets ─────────────────────────────
 // Reemplaza esta URL con la URL de despliegue de tu Apps Script.
-const API_URL = "https://script.google.com/macros/s/AKfycbzJdg1shbLaGcIQrUPxt3KmlbCZmAYoxOglY6Sumb7x8x1yo_DdIckTi9X-bbaIdA8B/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby3n8ikzO-0uIqHm_69X5a9ul3vdTY3k31inE9tEh7RgwfToMiJgujOX0R_EHAk9kfRzg/exec";
 
 // ─── Iconos SVG inline ─────────────────────────────────────────────────────
 
@@ -243,16 +243,16 @@ const ActionSheet = ({ isOpen, onClose, onCamera, onGallery }) => {
 // ─── Componente principal ──────────────────────────────────────────────────
 export default function TicketScanner() {
   // Estados de la UI: 'idle' | 'preview' | 'loading' | 'success' | 'error'
-  const [uiState, setUiState]       = useState('idle');
-  const [imageFile, setImageFile]   = useState(null);
+  const [uiState, setUiState] = useState('idle');
+  const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
-  const [errorMsg, setErrorMsg]     = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-  const [sheetOpen, setSheetOpen]   = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // Dos inputs ocultos: uno con capture (cámara) y otro sin él (galería)
-  const cameraInputRef  = useRef(null);
+  const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
 
   // ── Manejo de selección de imagen ─────────────────────────────────────────
@@ -274,13 +274,13 @@ export default function TicketScanner() {
   };
 
   // ── Action sheet handlers ──────────────────────────────────────────────────
-  const openCamera  = () => { setSheetOpen(false); setTimeout(() => cameraInputRef.current?.click(), 150); };
+  const openCamera = () => { setSheetOpen(false); setTimeout(() => cameraInputRef.current?.click(), 150); };
   const openGallery = () => { setSheetOpen(false); setTimeout(() => galleryInputRef.current?.click(), 150); };
 
   // ── Drag & Drop handlers ──────────────────────────────────────────────────
-  const handleDragOver  = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = ()  => setIsDragging(false);
-  const handleDrop      = (e) => {
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
@@ -298,7 +298,7 @@ export default function TicketScanner() {
       // extraemos únicamente el flujo binario puro para enviarlo limpio a la API.
       const base64Clean = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload  = () => resolve(reader.result.split(',')[1]);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
         reader.onerror = () => reject(new Error('Error al leer el archivo'));
         reader.readAsDataURL(imageFile);
       });
@@ -322,9 +322,9 @@ export default function TicketScanner() {
       // Los datos extraídos no son devueltos; mostramos confirmación de envío correcto.
       setExtractedData({
         fecha_pago: '—',
-        hora_pago:  '—',
-        matricula:  '—',
-        gasto:      '—',
+        hora_pago: '—',
+        matricula: '—',
+        gasto: '—',
       });
       setUiState('success');
     } catch (err) {
@@ -348,7 +348,7 @@ export default function TicketScanner() {
     <>
       {/* Inputs ocultos ─────────────────────────────────────────────────── */}
       {/* capture="environment" → fuerza la cámara trasera en móvil */}
-      <input ref={cameraInputRef}  type="file" accept="image/*" capture="environment"
+      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment"
         onChange={handleInputChange} className="hidden" aria-hidden="true" />
       {/* Sin capture → el sistema operativo muestra el selector de galería */}
       <input ref={galleryInputRef} type="file" accept="image/*"
@@ -518,9 +518,9 @@ export default function TicketScanner() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <DataRow icon={<IconCalendar />} label="Fecha Pago" value={extractedData.fecha_pago ?? '—'} />
-                  <DataRow icon={<IconClock />}    label="Hora Pago"  value={extractedData.hora_pago  ?? '—'} />
-                  <DataRow icon={<IconCar />}      label="Matrícula"  value={extractedData.matricula  ?? '—'} mono />
-                  <DataRow icon={<IconMoney />}    label="Gasto"      value={extractedData.gasto      ?? '—'} bold />
+                  <DataRow icon={<IconClock />} label="Hora Pago" value={extractedData.hora_pago ?? '—'} />
+                  <DataRow icon={<IconCar />} label="Matrícula" value={extractedData.matricula ?? '—'} mono />
+                  <DataRow icon={<IconMoney />} label="Gasto" value={extractedData.gasto ?? '—'} bold />
                 </div>
               </div>
               <button onClick={handleReset}
