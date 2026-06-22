@@ -128,10 +128,10 @@ const IconShutter = () => (
 // COMPONENTE: Captura de cámara con getUserMedia (funciona en desktop + móvil)
 // ═══════════════════════════════════════════════════════════════════════════
 const CameraCapture = ({ onCapture, onClose }) => {
-  const videoRef  = useRef(null);
+  const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
-  const [ready, setReady]   = useState(false);
+  const [ready, setReady] = useState(false);
   const [camErr, setCamErr] = useState('');
 
   // Inicia el stream de la cámara al montar el componente
@@ -166,11 +166,11 @@ const CameraCapture = ({ onCapture, onClose }) => {
 
   // Captura el fotograma actual del video y lo convierte a File
   const handleShutter = () => {
-    const video  = videoRef.current;
+    const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || !ready) return;
 
-    canvas.width  = video.videoWidth;
+    canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
 
@@ -346,14 +346,14 @@ const DataRow = ({ icon, label, value, mono = false, bold = false }) => (
 // COMPONENTE PRINCIPAL
 // ═══════════════════════════════════════════════════════════════════════════
 export default function TicketScanner() {
-  const [uiState, setUiState]           = useState('idle');
-  const [imageFile, setImageFile]       = useState(null);
-  const [previewUrl, setPreviewUrl]     = useState(null);
+  const [uiState, setUiState] = useState('idle');
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
-  const [errorMsg, setErrorMsg]         = useState('');
-  const [isDragging, setIsDragging]     = useState(false);
-  const [sheetOpen, setSheetOpen]       = useState(false);
-  const [showCamera, setShowCamera]     = useState(false);  // ← controla la cámara getUserMedia
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);  // ← controla la cámara getUserMedia
 
   const galleryInputRef = useRef(null);  // solo galería (sin capture)
 
@@ -388,9 +388,9 @@ export default function TicketScanner() {
   };
 
   // ── Drag & Drop ────────────────────────────────────────────────────────────
-  const handleDragOver  = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = ()  => setIsDragging(false);
-  const handleDrop      = (e) => {
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
@@ -408,7 +408,7 @@ export default function TicketScanner() {
       // Con .split(',')[1] extraemos solo el flujo binario puro.
       const base64Clean = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload  = () => resolve(reader.result.split(',')[1]);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
         reader.onerror = () => reject(new Error('Error al leer el archivo de imagen'));
         reader.readAsDataURL(imageFile);
       });
@@ -444,9 +444,9 @@ export default function TicketScanner() {
       if (json.status === 'success') {
         setExtractedData({
           fecha_pago: json.fecha_pago ?? '—',
-          hora_pago:  json.hora_pago  ?? '—',
-          matricula:  json.matricula  ?? '—',
-          gasto:      json.gasto      ?? '—',
+          hora_pago: json.hora_pago ?? '—',
+          matricula: json.matricula ?? '—',
+          gasto: json.gasto ?? '—',
         });
         setUiState('success');
       } else {
@@ -509,10 +509,10 @@ export default function TicketScanner() {
           {/* Cabecera */}
           <div className="mb-6 text-center">
             <div className="inline-flex items-center justify-center mb-3">
-              <img src={logo} alt="Logo" className="w-24 h-24 object-contain" />
+              <img src={logo} alt="Logo" className="w-60 h-60 object-contain" />
             </div>
             <h1 className="text-lg font-semibold text-slate-800 tracking-tight">Scanner de Tickets</h1>
-            <p className="text-sm text-slate-400 mt-0.5">Parking · Gestión Automática</p>
+            <p className="text-sm text-slate-400 mt-0.5">Escanea con la camara el ticket</p>
           </div>
 
           {/* ── ESTADO 1: DROPZONE ──────────────────────────────────────────── */}
@@ -610,7 +610,7 @@ export default function TicketScanner() {
                 <div className="flex items-center gap-3">
                   <IconSpinner />
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-amber-800">Analizando con IA…</p>
+                    <p className="text-sm font-semibold text-amber-800">Analizando la imagen…</p>
                     <p className="text-xs text-amber-600 mt-0.5">Leyendo ticket y ordenando celdas en Sheets</p>
                   </div>
                 </div>
@@ -638,9 +638,9 @@ export default function TicketScanner() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <DataRow icon={<IconCalendar />} label="Fecha Pago" value={extractedData.fecha_pago} />
-                  <DataRow icon={<IconClock />}    label="Hora Pago"  value={extractedData.hora_pago} />
-                  <DataRow icon={<IconCar />}      label="Matrícula"  value={extractedData.matricula} mono />
-                  <DataRow icon={<IconMoney />}    label="Gasto"      value={extractedData.gasto} bold />
+                  <DataRow icon={<IconClock />} label="Hora Pago" value={extractedData.hora_pago} />
+                  <DataRow icon={<IconCar />} label="Matrícula" value={extractedData.matricula} mono />
+                  <DataRow icon={<IconMoney />} label="Gasto" value={extractedData.gasto} bold />
                 </div>
               </div>
               <button onClick={handleReset}
@@ -683,7 +683,7 @@ export default function TicketScanner() {
           )}
 
           <p className="text-center text-xs text-slate-300 mt-6 select-none">
-            Procesado con Google Sheets · Apps Script
+            Realizado por Braulio Gutierrez
           </p>
         </div>
       </div>
