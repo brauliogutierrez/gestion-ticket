@@ -430,7 +430,15 @@ export default function TicketScanner() {
       }
 
       // PASO 3: Leer y mostrar los datos extraídos por el OCR de la API.
-      const json = await response.json();
+      const text = await response.text();
+      console.log('Respuesta cruda de la API:', text);
+
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (parseErr) {
+        throw new Error('La respuesta de Google Apps Script no es un JSON válido (posiblemente devolvió un error HTML 403 o de autenticación). Revisa la consola del navegador.');
+      }
 
       if (json.status === 'success') {
         setExtractedData({
