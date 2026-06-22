@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import logo from './assets/logo.png';
 
 // ─── Endpoint del Apps Script de Google Sheets ─────────────────────────────
 const API_URL = "https://script.google.com/macros/s/AKfycbzHMAHASEwwhX-Ka23BnX--Lasq7X4Nm6Lf3SV8B9BmAc7-h5Jc_y1RAVozytgijvXWXQ/exec";
@@ -507,13 +508,8 @@ export default function TicketScanner() {
 
           {/* Cabecera */}
           <div className="mb-6 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                className="w-6 h-6 text-emerald-600" aria-hidden="true">
-                <path d="M9 11l3 3L22 4" />
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-              </svg>
+            <div className="inline-flex items-center justify-center mb-3">
+              <img src={logo} alt="Logo" className="w-24 h-24 object-contain" />
             </div>
             <h1 className="text-lg font-semibold text-slate-800 tracking-tight">Scanner de Tickets</h1>
             <p className="text-sm text-slate-400 mt-0.5">Parking · Gestión Automática</p>
