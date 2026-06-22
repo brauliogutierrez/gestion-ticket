@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 
 // ─── Endpoint del Apps Script de Google Sheets ─────────────────────────────
-// Reemplaza esta URL con la URL de despliegue de tu Apps Script.
 const API_URL = "https://script.google.com/macros/s/AKfycby3n8ikzO-0uIqHm_69X5a9ul3vdTY3k31inE9tEh7RgwfToMiJgujOX0R_EHAk9kfRzg/exec";
 
-// ─── Iconos SVG inline ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// ICONOS SVG INLINE
+// ═══════════════════════════════════════════════════════════════════════════
 
-/** Icono de cámara */
 const IconCamera = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -16,7 +16,6 @@ const IconCamera = ({ className = "w-6 h-6" }) => (
   </svg>
 );
 
-/** Icono de galería / imagen */
 const IconGallery = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -27,7 +26,6 @@ const IconGallery = ({ className = "w-6 h-6" }) => (
   </svg>
 );
 
-/** Icono de spinner de carga animado */
 const IconSpinner = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -36,7 +34,6 @@ const IconSpinner = () => (
   </svg>
 );
 
-/** Icono de doble check de verificación */
 const IconDoubleCheck = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -46,7 +43,6 @@ const IconDoubleCheck = () => (
   </svg>
 );
 
-/** Icono de alerta / error */
 const IconAlert = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -57,7 +53,6 @@ const IconAlert = () => (
   </svg>
 );
 
-/** Icono de archivo / ticket */
 const IconTicket = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -69,7 +64,6 @@ const IconTicket = () => (
   </svg>
 );
 
-/** Icono de calendario */
 const IconCalendar = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -81,7 +75,6 @@ const IconCalendar = () => (
   </svg>
 );
 
-/** Icono de reloj */
 const IconClock = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -91,7 +84,6 @@ const IconClock = () => (
   </svg>
 );
 
-/** Icono de coche */
 const IconCar = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -103,7 +95,6 @@ const IconCar = () => (
   </svg>
 );
 
-/** Icono de moneda */
 const IconMoney = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -113,32 +104,161 @@ const IconMoney = () => (
   </svg>
 );
 
-/** Icono de X / cerrar */
 const IconClose = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    className="w-5 h-5 text-slate-400" aria-hidden="true">
+    className="w-5 h-5" aria-hidden="true">
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
 
-// ─── Componente auxiliar: fila del grid de resultados ──────────────────────
-const DataRow = ({ icon, label, value, mono = false, bold = false }) => (
-  <div className="bg-white rounded-xl p-3 border border-emerald-100 flex flex-col gap-1 shadow-sm">
-    <div className="flex items-center gap-1.5">
-      {icon}
-      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</span>
-    </div>
-    <span className={`text-sm text-slate-800 ${mono ? 'font-mono tracking-widest' : ''} ${bold ? 'font-bold text-slate-900' : ''}`}>
-      {value}
-    </span>
-  </div>
+// ── Icono del disparador de cámara (círculo blanco grande) ─────────────────
+const IconShutter = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+    className="w-8 h-8 text-white" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" fill="white" />
+  </svg>
 );
 
-// ─── Action Sheet: elige entre cámara o galería ────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPONENTE: Captura de cámara con getUserMedia (funciona en desktop + móvil)
+// ═══════════════════════════════════════════════════════════════════════════
+const CameraCapture = ({ onCapture, onClose }) => {
+  const videoRef  = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const [ready, setReady]   = useState(false);
+  const [camErr, setCamErr] = useState('');
+
+  // Inicia el stream de la cámara al montar el componente
+  useEffect(() => {
+    let cancelled = false;
+
+    const start = async () => {
+      try {
+        // Intenta primero la cámara trasera; si falla, acepta cualquiera
+        const constraints = { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          setReady(true);
+        }
+      } catch (err) {
+        if (!cancelled) setCamErr(err.message || 'Permiso de cámara denegado');
+      }
+    };
+
+    start();
+
+    return () => {
+      cancelled = true;
+      // Libera la cámara al desmontar el componente
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    };
+  }, []);
+
+  // Captura el fotograma actual del video y lo convierte a File
+  const handleShutter = () => {
+    const video  = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || !ready) return;
+
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      // Detiene el stream antes de pasar la imagen al padre
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+      const file = new File([blob], `ticket_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      onCapture(file);
+    }, 'image/jpeg', 0.92);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black flex flex-col">
+      {/* Barra superior */}
+      <div className="flex items-center justify-between px-4 py-3 bg-black/60">
+        <span className="text-white font-semibold text-sm tracking-wide">Capturar ticket</span>
+        <button onClick={onClose}
+          className="p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+          aria-label="Cerrar cámara">
+          <IconClose />
+        </button>
+      </div>
+
+      {/* Área de video */}
+      <div className="flex-1 relative overflow-hidden bg-black">
+        {camErr ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-8 text-center">
+            <div className="w-14 h-14 rounded-full bg-red-900/40 flex items-center justify-center">
+              <IconAlert />
+            </div>
+            <p className="text-white font-medium text-sm">No se pudo acceder a la cámara</p>
+            <p className="text-slate-400 text-xs leading-relaxed">{camErr}</p>
+            <button onClick={onClose}
+              className="mt-2 px-5 py-2.5 bg-white/10 text-white rounded-xl text-sm hover:bg-white/20 transition-colors">
+              Cerrar
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Video en vivo */}
+            <video ref={videoRef} playsInline muted
+              className="absolute inset-0 w-full h-full object-cover" />
+
+            {/* Guía de encuadre */}
+            {!ready && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-white/40 rounded-full animate-ping" />
+              </div>
+            )}
+            {ready && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-64 h-40 border-2 border-white/50 rounded-xl" />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Botón disparador */}
+      {!camErr && (
+        <div className="px-6 py-6 bg-black/60 flex items-center justify-center">
+          <button
+            onClick={handleShutter}
+            disabled={!ready}
+            aria-label="Tomar foto"
+            className={`
+              w-18 h-18 rounded-full border-4 border-white
+              flex items-center justify-center
+              transition-all duration-150 active:scale-90
+              ${ready ? 'opacity-100' : 'opacity-40 cursor-not-allowed'}
+            `}
+            style={{ width: 72, height: 72 }}
+          >
+            <IconShutter />
+          </button>
+        </div>
+      )}
+
+      {/* Canvas oculto para capturar el fotograma */}
+      <canvas ref={canvasRef} className="hidden" />
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPONENTE: Action Sheet (bottom sheet)
+// ═══════════════════════════════════════════════════════════════════════════
 const ActionSheet = ({ isOpen, onClose, onCamera, onGallery }) => {
-  // Cierra con la tecla Escape
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     if (isOpen) document.addEventListener('keydown', onKey);
@@ -147,63 +267,37 @@ const ActionSheet = ({ isOpen, onClose, onCamera, onGallery }) => {
 
   return (
     <>
-      {/* Backdrop semitransparente */}
       <div
-        className={`
-          fixed inset-0 z-40 bg-black/40 backdrop-blur-sm
-          transition-opacity duration-300
-          ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
-        `}
         onClick={onClose}
         aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300
+          ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       />
-
-      {/* Sheet deslizable desde abajo */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Seleccionar origen de imagen"
-        className={`
-          fixed bottom-0 left-0 right-0 z-50
-          flex flex-col
-          bg-white rounded-t-3xl shadow-2xl
-          px-4 pb-8 pt-3
+        className={`fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl px-4 pb-8 pt-3
           transition-transform duration-300 ease-out
-          ${isOpen ? 'translate-y-0' : 'translate-y-full'}
-        `}
+          ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
       >
-        {/* Handle visual */}
         <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-5" />
 
-        {/* Título + cerrar */}
         <div className="flex items-center justify-between mb-4 px-1">
-          <p className="text-sm font-semibold text-slate-700">
-            Añadir imagen del ticket
-          </p>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-slate-100 transition-colors"
-            aria-label="Cerrar"
-          >
+          <p className="text-sm font-semibold text-slate-700">Añadir imagen del ticket</p>
+          <button onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-slate-100 transition-colors text-slate-500"
+            aria-label="Cerrar">
             <IconClose />
           </button>
         </div>
 
-        {/* Opciones */}
         <div className="flex flex-col gap-3">
-          {/* Opción 1 → Cámara nativa trasera */}
-          <button
-            onClick={onCamera}
-            className="
-              flex items-center gap-4
-              bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200
-              border border-emerald-100
-              rounded-2xl px-5 py-4
-              transition-colors duration-150
-              focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2
-              text-left
-            "
-          >
+          {/* Opción cámara → usa getUserMedia (funciona desktop + móvil) */}
+          <button onClick={onCamera}
+            className="flex items-center gap-4 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200
+              border border-emerald-100 rounded-2xl px-5 py-4 transition-colors duration-150
+              focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 text-left">
             <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-emerald-500 shrink-0 shadow-sm">
               <IconCamera className="w-5 h-5 text-white" />
             </div>
@@ -213,19 +307,11 @@ const ActionSheet = ({ isOpen, onClose, onCamera, onGallery }) => {
             </div>
           </button>
 
-          {/* Opción 2 → Galería de fotos */}
-          <button
-            onClick={onGallery}
-            className="
-              flex items-center gap-4
-              bg-slate-50 hover:bg-slate-100 active:bg-slate-200
-              border border-slate-100
-              rounded-2xl px-5 py-4
-              transition-colors duration-150
-              focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2
-              text-left
-            "
-          >
+          {/* Opción galería → input file sin capture */}
+          <button onClick={onGallery}
+            className="flex items-center gap-4 bg-slate-50 hover:bg-slate-100 active:bg-slate-200
+              border border-slate-100 rounded-2xl px-5 py-4 transition-colors duration-150
+              focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 text-left">
             <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-600 shrink-0 shadow-sm">
               <IconGallery className="w-5 h-5 text-white" />
             </div>
@@ -240,22 +326,37 @@ const ActionSheet = ({ isOpen, onClose, onCamera, onGallery }) => {
   );
 };
 
-// ─── Componente principal ──────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPONENTE: Fila de datos en el grid de éxito
+// ═══════════════════════════════════════════════════════════════════════════
+const DataRow = ({ icon, label, value, mono = false, bold = false }) => (
+  <div className="bg-white rounded-xl p-3 border border-emerald-100 flex flex-col gap-1 shadow-sm">
+    <div className="flex items-center gap-1.5">
+      {icon}
+      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</span>
+    </div>
+    <span className={`text-sm text-slate-800 ${mono ? 'font-mono tracking-widest' : ''} ${bold ? 'font-bold text-slate-900' : ''}`}>
+      {value}
+    </span>
+  </div>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ═══════════════════════════════════════════════════════════════════════════
 export default function TicketScanner() {
-  // Estados de la UI: 'idle' | 'preview' | 'loading' | 'success' | 'error'
-  const [uiState, setUiState] = useState('idle');
-  const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [uiState, setUiState]           = useState('idle');
+  const [imageFile, setImageFile]       = useState(null);
+  const [previewUrl, setPreviewUrl]     = useState(null);
   const [extractedData, setExtractedData] = useState(null);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [errorMsg, setErrorMsg]         = useState('');
+  const [isDragging, setIsDragging]     = useState(false);
+  const [sheetOpen, setSheetOpen]       = useState(false);
+  const [showCamera, setShowCamera]     = useState(false);  // ← controla la cámara getUserMedia
 
-  // Dos inputs ocultos: uno con capture (cámara) y otro sin él (galería)
-  const cameraInputRef = useRef(null);
-  const galleryInputRef = useRef(null);
+  const galleryInputRef = useRef(null);  // solo galería (sin capture)
 
-  // ── Manejo de selección de imagen ─────────────────────────────────────────
+  // ── Manejo de archivo seleccionado (galería o captura) ────────────────────
   const handleFileSelect = (file) => {
     if (!file || !file.type.startsWith('image/')) return;
     setImageFile(file);
@@ -264,76 +365,91 @@ export default function TicketScanner() {
     setErrorMsg('');
     setExtractedData(null);
     setSheetOpen(false);
+    setShowCamera(false);
   };
 
   const handleInputChange = (e) => {
     const file = e.target.files?.[0];
     if (file) handleFileSelect(file);
-    // Resetea el value para que onChange vuelva a dispararse con el mismo archivo
     e.target.value = '';
   };
 
-  // ── Action sheet handlers ──────────────────────────────────────────────────
-  const openCamera = () => { setSheetOpen(false); setTimeout(() => cameraInputRef.current?.click(), 150); };
-  const openGallery = () => { setSheetOpen(false); setTimeout(() => galleryInputRef.current?.click(), 150); };
+  // ── Action sheet: abrir cámara getUserMedia o galería ─────────────────────
+  const openCamera = () => {
+    setSheetOpen(false);
+    // Pequeño delay para que el sheet cierre visualmente antes de la cámara
+    setTimeout(() => setShowCamera(true), 250);
+  };
 
-  // ── Drag & Drop handlers ──────────────────────────────────────────────────
-  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = () => setIsDragging(false);
-  const handleDrop = (e) => {
+  const openGallery = () => {
+    setSheetOpen(false);
+    setTimeout(() => galleryInputRef.current?.click(), 150);
+  };
+
+  // ── Drag & Drop ────────────────────────────────────────────────────────────
+  const handleDragOver  = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = ()  => setIsDragging(false);
+  const handleDrop      = (e) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleFileSelect(file);
   };
 
-  // ── Lógica de envío a la API ───────────────────────────────────────────────
+  // ── Envío a la API de Apps Script ─────────────────────────────────────────
   const handleSubmit = async () => {
     if (!imageFile) return;
     setUiState('loading');
 
     try {
-      // PASO 1: Leer el archivo y convertirlo a Base64 mediante FileReader.
-      // readAsDataURL produce "data:<mime>;base64,<datos>". Con .split(',')[1]
-      // extraemos únicamente el flujo binario puro para enviarlo limpio a la API.
+      // PASO 1: Convertir la imagen a Base64.
+      // readAsDataURL devuelve "data:<mime>;base64,<datos>".
+      // Con .split(',')[1] extraemos solo el flujo binario puro.
       const base64Clean = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = () => reject(new Error('Error al leer el archivo'));
+        reader.onload  = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = () => reject(new Error('Error al leer el archivo de imagen'));
         reader.readAsDataURL(imageFile);
       });
 
       const fileType = imageFile.type; // ej: "image/jpeg"
 
-      // PASO 2: POST a la API de Apps Script con mode: "no-cors" y Content-Type: "text/plain".
-      // Esto evita el preflight CORS que bloquea las peticiones desde Vercel/navegador.
-      // NOTA: con no-cors la respuesta es opaca (no se puede leer el body),
-      // por lo que mostramos éxito optimistamente si el fetch no lanza excepción.
-      await fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",                  // Evita bloqueos de origen cruzado
-        headers: {
-          "Content-Type": "text/plain",   // Salta el pre-check estricto de CORS
-        },
+      // PASO 2: POST estándar a Apps Script.
+      // Google Apps Script devuelve Access-Control-Allow-Origin: * por defecto
+      // cuando el despliegue tiene acceso "Cualquier persona".
+      // Usamos application/json para que el script pueda leer e.postData.contents.
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imagenB64: base64Clean, tipoMime: fileType }),
       });
 
-      // Con no-cors no podemos leer la respuesta → mostramos éxito si no hubo error de red.
-      // Los datos extraídos no son devueltos; mostramos confirmación de envío correcto.
-      setExtractedData({
-        fecha_pago: '—',
-        hora_pago: '—',
-        matricula: '—',
-        gasto: '—',
-      });
-      setUiState('success');
+      if (!response.ok) {
+        throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+      }
+
+      // PASO 3: Leer y mostrar los datos extraídos por el OCR de la API.
+      const json = await response.json();
+
+      if (json.status === 'success') {
+        setExtractedData({
+          fecha_pago: json.fecha_pago ?? '—',
+          hora_pago:  json.hora_pago  ?? '—',
+          matricula:  json.matricula  ?? '—',
+          gasto:      json.gasto      ?? '—',
+        });
+        setUiState('success');
+      } else {
+        throw new Error(json.message || 'La API procesó la solicitud pero devolvió un error');
+      }
     } catch (err) {
-      setErrorMsg(err.message || 'Error desconocido. Inténtalo de nuevo.');
+      // Captura errores de red, lectura de archivo o respuesta inesperada de la API
+      setErrorMsg(err.message || 'Error de conexión. Comprueba la red e inténtalo de nuevo.');
       setUiState('error');
     }
   };
 
-  // ── Resetear al estado inicial ────────────────────────────────────────────
+  // ── Reset ──────────────────────────────────────────────────────────────────
   const handleReset = () => {
     setUiState('idle');
     setImageFile(null);
@@ -341,20 +457,33 @@ export default function TicketScanner() {
     setExtractedData(null);
     setErrorMsg('');
     setSheetOpen(false);
+    setShowCamera(false);
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════════════════════════════════
   return (
     <>
-      {/* Inputs ocultos ─────────────────────────────────────────────────── */}
-      {/* capture="environment" → fuerza la cámara trasera en móvil */}
-      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment"
-        onChange={handleInputChange} className="hidden" aria-hidden="true" />
-      {/* Sin capture → el sistema operativo muestra el selector de galería */}
-      <input ref={galleryInputRef} type="file" accept="image/*"
-        onChange={handleInputChange} className="hidden" aria-hidden="true" />
+      {/* ── Módulo de cámara getUserMedia (overlay pantalla completa) ──────── */}
+      {showCamera && (
+        <CameraCapture
+          onCapture={(file) => handleFileSelect(file)}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
 
-      {/* Action Sheet ───────────────────────────────────────────────────── */}
+      {/* ── Input oculto solo para galería ────────────────────────────────── */}
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleInputChange}
+        className="hidden"
+        aria-hidden="true"
+      />
+
+      {/* ── Action Sheet ──────────────────────────────────────────────────── */}
       <ActionSheet
         isOpen={sheetOpen}
         onClose={() => setSheetOpen(false)}
@@ -362,8 +491,9 @@ export default function TicketScanner() {
         onGallery={openGallery}
       />
 
-      {/* Pantalla principal ─────────────────────────────────────────────── */}
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-emerald-50 flex items-center justify-center p-4">
+      {/* ── Pantalla principal ────────────────────────────────────────────── */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-emerald-50
+        flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 border border-slate-100">
 
           {/* Cabecera */}
@@ -380,7 +510,7 @@ export default function TicketScanner() {
             <p className="text-sm text-slate-400 mt-0.5">Parking · Gestión Automática</p>
           </div>
 
-          {/* ── ESTADO 1: DROPZONE / INICIAL ───────────────────────────── */}
+          {/* ── ESTADO 1: DROPZONE ──────────────────────────────────────────── */}
           {uiState === 'idle' && (
             <div
               onClick={() => setSheetOpen(true)}
@@ -391,64 +521,50 @@ export default function TicketScanner() {
               tabIndex={0}
               aria-label="Seleccionar origen de imagen del ticket"
               onKeyDown={(e) => e.key === 'Enter' && setSheetOpen(true)}
-              className={`
-                border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
                 transition-all duration-200 select-none
                 ${isDragging
                   ? 'border-emerald-400 bg-emerald-50'
-                  : 'border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400'}
-              `}
+                  : 'border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400'}`}
             >
               <div className="flex flex-col items-center gap-3">
-                {/* Icono central */}
                 <div className="relative">
                   <div className="p-3 rounded-full bg-white shadow-sm border border-slate-100">
                     <IconCamera className="w-10 h-10 text-slate-400" />
                   </div>
-                  {/* Badge con signo + */}
                   <span className="absolute -bottom-1 -right-1 flex items-center justify-center
-                    w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold shadow">
-                    +
-                  </span>
+                    w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold shadow">+</span>
                 </div>
-
                 <div>
                   <p className="text-sm font-medium text-slate-600">Toca para añadir imagen</p>
                   <p className="text-xs text-slate-400 mt-1">Cámara · Galería · Arrastra aquí</p>
                 </div>
-
-                {/* Chips de opciones rápidas (decorativos) */}
                 <div className="flex items-center gap-2 flex-wrap justify-center">
                   <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700
                     bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">
-                    <IconCamera className="w-3.5 h-3.5" />
-                    Cámara
+                    <IconCamera className="w-3.5 h-3.5" />Cámara
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-xs text-slate-500
                     bg-slate-50 border border-slate-200 rounded-full px-3 py-1">
-                    <IconGallery className="w-3.5 h-3.5" />
-                    Galería
+                    <IconGallery className="w-3.5 h-3.5" />Galería
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-xs text-slate-400
                     bg-white border border-slate-200 rounded-full px-3 py-1">
-                    <IconTicket />
-                    JPG · PNG · WEBP
+                    <IconTicket />JPG · PNG · WEBP
                   </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ── ESTADO 2: VISTA PREVIA ──────────────────────────────────── */}
+          {/* ── ESTADO 2: VISTA PREVIA ──────────────────────────────────────── */}
           {uiState === 'preview' && previewUrl && (
             <div className="flex flex-col gap-4">
               <div className="relative rounded-xl overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
-                <img src={previewUrl} alt="Vista previa del ticket de parking"
+                <img src={previewUrl} alt="Vista previa del ticket"
                   className="max-h-60 w-full object-cover" />
                 <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs
-                  rounded-full px-2.5 py-1 backdrop-blur-sm font-medium">
-                  Vista previa
-                </div>
+                  rounded-full px-2.5 py-1 backdrop-blur-sm font-medium">Vista previa</div>
               </div>
 
               <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
@@ -469,20 +585,19 @@ export default function TicketScanner() {
                 </button>
                 <button onClick={() => setSheetOpen(true)}
                   className="text-slate-500 hover:text-slate-700 text-sm w-full py-2.5 rounded-xl
-                    hover:bg-slate-50 transition-colors duration-150
-                    focus:outline-none focus:ring-2 focus:ring-slate-300">
+                    hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300">
                   Cambiar imagen
                 </button>
               </div>
             </div>
           )}
 
-          {/* ── ESTADO 3: PROCESANDO ────────────────────────────────────── */}
+          {/* ── ESTADO 3: PROCESANDO ────────────────────────────────────────── */}
           {uiState === 'loading' && (
             <div className="flex flex-col gap-4">
               {previewUrl && (
                 <div className="relative rounded-xl overflow-hidden border border-slate-100">
-                  <img src={previewUrl} alt="Procesando ticket"
+                  <img src={previewUrl} alt="Procesando"
                     className="max-h-60 w-full object-cover opacity-40 blur-[1px]" />
                 </div>
               )}
@@ -495,7 +610,7 @@ export default function TicketScanner() {
                   </div>
                 </div>
                 <div className="mt-3 h-1.5 bg-amber-100 rounded-full overflow-hidden">
-                  <div className="h-full w-1/3 bg-amber-400 rounded-full animate-[loading_1.5s_ease-in-out_infinite]" />
+                  <div className="h-full w-1/3 bg-amber-400 rounded-full animate-bounce" />
                 </div>
               </div>
               <button disabled
@@ -505,7 +620,7 @@ export default function TicketScanner() {
             </div>
           )}
 
-          {/* ── ESTADO 4: ÉXITO ─────────────────────────────────────────── */}
+          {/* ── ESTADO 4: ÉXITO ─────────────────────────────────────────────── */}
           {uiState === 'success' && extractedData && (
             <div className="flex flex-col gap-4">
               <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
@@ -517,10 +632,10 @@ export default function TicketScanner() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <DataRow icon={<IconCalendar />} label="Fecha Pago" value={extractedData.fecha_pago ?? '—'} />
-                  <DataRow icon={<IconClock />} label="Hora Pago" value={extractedData.hora_pago ?? '—'} />
-                  <DataRow icon={<IconCar />} label="Matrícula" value={extractedData.matricula ?? '—'} mono />
-                  <DataRow icon={<IconMoney />} label="Gasto" value={extractedData.gasto ?? '—'} bold />
+                  <DataRow icon={<IconCalendar />} label="Fecha Pago" value={extractedData.fecha_pago} />
+                  <DataRow icon={<IconClock />}    label="Hora Pago"  value={extractedData.hora_pago} />
+                  <DataRow icon={<IconCar />}      label="Matrícula"  value={extractedData.matricula} mono />
+                  <DataRow icon={<IconMoney />}    label="Gasto"      value={extractedData.gasto} bold />
                 </div>
               </div>
               <button onClick={handleReset}
@@ -533,7 +648,7 @@ export default function TicketScanner() {
             </div>
           )}
 
-          {/* ── ESTADO DE ERROR ──────────────────────────────────────────── */}
+          {/* ── ESTADO DE ERROR ──────────────────────────────────────────────── */}
           {uiState === 'error' && (
             <div className="flex flex-col gap-4">
               <div className="bg-red-50 border border-red-100 rounded-xl p-4">
@@ -555,15 +670,13 @@ export default function TicketScanner() {
                 </button>
                 <button onClick={handleReset}
                   className="text-slate-500 hover:text-slate-700 text-sm w-full py-2.5 rounded-xl
-                    hover:bg-slate-50 transition-colors duration-150
-                    focus:outline-none focus:ring-2 focus:ring-slate-300">
+                    hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300">
                   Elegir otra imagen
                 </button>
               </div>
             </div>
           )}
 
-          {/* Pie de tarjeta */}
           <p className="text-center text-xs text-slate-300 mt-6 select-none">
             Procesado con Google Sheets · Apps Script
           </p>
