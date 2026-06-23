@@ -818,29 +818,44 @@ export default function TicketScanner() {
 
           {/* ── ESTADO 5: ÉXITO ─────────────────────────────────────────────── */}
           {uiState === 'success' && editedData && (
-            <div className="flex flex-col gap-4">
-              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <IconDoubleCheck />
+            <div className="flex flex-col gap-5">
+              {/* Banner de éxito */}
+              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 shadow">
+                    <IconDoubleCheck />
+                  </div>
                   <div>
-                    <p className="text-sm font-semibold text-emerald-800">¡Ticket procesado y guardado!</p>
-                    <p className="text-xs text-emerald-600 mt-0.5">Fila insertada y ordenada cronológicamente</p>
+                    <p className="text-base font-bold text-emerald-800">¡Enviado correctamente!</p>
+                    <p className="text-xs text-emerald-600 mt-0.5">Fila guardada y ordenada en Google Sheets</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <DataRow icon={<IconCalendar />} label="Fecha Pago" value={editedData.fecha_pago} />
-                  <DataRow icon={<IconClock />} label="Hora Pago" value={editedData.hora_pago} />
-                  <DataRow icon={<IconCar />} label="Matrícula" value={editedData.matricula} mono />
-                  <DataRow icon={<IconMoney />} label="Gasto" value={editedData.gasto} bold />
+              </div>
+
+              {/* Datos guardados */}
+              <div className="grid grid-cols-2 gap-2">
+                <DataRow icon={<IconCalendar />} label="Fecha Pago" value={editedData.fecha_pago} />
+                <DataRow icon={<IconClock />} label="Hora Pago" value={editedData.hora_pago} />
+                <DataRow icon={<IconCar />} label="Matrícula" value={editedData.matricula} mono />
+                <DataRow icon={<IconMoney />} label="Gasto" value={editedData.gasto} bold />
+              </div>
+
+              {/* Pregunta al usuario */}
+              <div className="text-center">
+                <p className="text-sm font-medium text-slate-600 mb-3">¿Quieres escanear otro ticket?</p>
+                <div className="flex flex-col gap-2">
+                  <button onClick={handleReset}
+                    className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700
+                      text-white font-semibold w-full py-3.5 rounded-xl
+                      transition-all duration-150 shadow-md hover:shadow-lg
+                      focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2
+                      flex items-center justify-center gap-2">
+                    <IconCamera className="w-4 h-4" />
+                    Sí, escanear otro
+                  </button>
+                  <p className="text-xs text-slate-400">O cierra la aplicación si has terminado</p>
                 </div>
               </div>
-              <button onClick={handleReset}
-                className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700
-                  text-white font-semibold w-full py-3.5 rounded-xl
-                  transition-all duration-150 shadow-md hover:shadow-lg
-                  focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
-                Escanear otro ticket
-              </button>
             </div>
           )}
 
@@ -857,7 +872,7 @@ export default function TicketScanner() {
                 </div>
               </div>
               <div className="flex flex-col gap-2.5">
-                <button onClick={handleSubmit}
+                <button onClick={handleAnalyze}
                   className="bg-red-500 hover:bg-red-600 active:bg-red-700
                     text-white font-semibold w-full py-3.5 rounded-xl
                     transition-all duration-150 shadow-md
