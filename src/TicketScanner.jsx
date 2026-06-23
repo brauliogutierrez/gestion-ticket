@@ -495,9 +495,10 @@ export default function TicketScanner() {
     }
   };
 
-  // ── Actualizar un campo del formulario editable ───────────────────────────
+  // ── Actualizar un campo del formulario editable (siempre en MAYÚSCULAS) ──
   const handleFieldChange = (key, value) => {
-    setEditedData(prev => ({ ...prev, [key]: value }));
+    const upperValue = value.replace(/[a-z]/g, (c) => c.toUpperCase());
+    setEditedData(prev => ({ ...prev, [key]: upperValue }));
   };
 
   // ── PASO 2: Enviar los datos (editados) al Sheet ──────────────────────────
