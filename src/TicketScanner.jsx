@@ -114,6 +114,24 @@ const IconClose = () => (
   </svg>
 );
 
+const IconEdit = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+    className="w-4 h-4 text-slate-400" aria-hidden="true">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const IconSend = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    className="w-5 h-5" aria-hidden="true">
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
+
 // ── Icono del disparador de cámara (círculo blanco grande) ─────────────────
 const IconShutter = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -343,6 +361,29 @@ const DataRow = ({ icon, label, value, mono = false, bold = false }) => (
 );
 
 // ═══════════════════════════════════════════════════════════════════════════
+// COMPONENTE: Campo editable del formulario de revisión
+// ═══════════════════════════════════════════════════════════════════════════
+const EditField = ({ icon, label, fieldKey, value, onChange, mono = false }) => (
+  <div className="bg-white rounded-xl p-3 border border-blue-100 flex flex-col gap-1.5 shadow-sm">
+    <div className="flex items-center gap-1.5">
+      {icon}
+      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</span>
+      <IconEdit />
+    </div>
+    <input
+      id={`edit-${fieldKey}`}
+      type="text"
+      value={value}
+      onChange={(e) => onChange(fieldKey, e.target.value)}
+      className={`text-sm text-slate-800 bg-transparent border-none outline-none w-full
+        focus:bg-blue-50 rounded px-1 py-0.5 -mx-1 transition-colors
+        ${mono ? 'font-mono tracking-widest' : ''}`}
+      aria-label={label}
+    />
+  </div>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ═══════════════════════════════════════════════════════════════════════════
 export default function TicketScanner() {
@@ -350,10 +391,12 @@ export default function TicketScanner() {
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
+  const [editedData, setEditedData] = useState(null);  // ← datos editables por el usuario
   const [errorMsg, setErrorMsg] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showCamera, setShowCamera] = useState(false);  // ← controla la cámara getUserMedia
+  const [isSending, setIsSending] = useState(false);    // ← enviando al sheet desde revisión
 
   const galleryInputRef = useRef(null);  // solo galería (sin capture)
 
@@ -365,6 +408,7 @@ export default function TicketScanner() {
     setUiState('preview');
     setErrorMsg('');
     setExtractedData(null);
+    setEditedData(null);
     setSheetOpen(false);
     setShowCamera(false);
   };
@@ -397,15 +441,12 @@ export default function TicketScanner() {
     if (file) handleFileSelect(file);
   };
 
-  // ── Envío a la API de Apps Script ─────────────────────────────────────────
-  const handleSubmit = async () => {
+  // ── PASO 1: Analizar imagen con OCR → mostrar formulario editable ─────────
+  const handleAnalyze = async () => {
     if (!imageFile) return;
     setUiState('loading');
 
     try {
-      // PASO 1: Convertir la imagen a Base64.
-      // readAsDataURL devuelve "data:<mime>;base64,<datos>".
-      // Con .split(',')[1] extraemos solo el flujo binario puro.
       const base64Clean = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -413,24 +454,18 @@ export default function TicketScanner() {
         reader.readAsDataURL(imageFile);
       });
 
-      const fileType = imageFile.type; // ej: "image/jpeg"
+      const fileType = imageFile.type;
 
-      // PASO 2: POST a Apps Script con Content-Type: text/plain.
-      // "text/plain" es una "simple request" → el navegador NO envía preflight OPTIONS,
-      // evitando el bloqueo CORS. Apps Script recibe el body en e.postData.contents
-      // y puede parsearlo con JSON.parse() aunque el tipo sea text/plain.
-      // Al NO usar mode:"no-cors", la respuesta sigue siendo legible.
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ imagenB64: base64Clean, tipoMime: fileType }),
+        body: JSON.stringify({ imagenB64: base64Clean, tipoMime: fileType, soloOCR: true }),
       });
 
       if (!response.ok) {
         throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
       }
 
-      // PASO 3: Leer y mostrar los datos extraídos por el OCR de la API.
       const text = await response.text();
       console.log('Respuesta cruda de la API:', text);
 
@@ -442,20 +477,69 @@ export default function TicketScanner() {
       }
 
       if (json.status === 'success') {
-        setExtractedData({
-          fecha_pago: json.fecha_pago ?? '—',
-          hora_pago: json.hora_pago ?? '—',
-          matricula: json.matricula ?? '—',
-          gasto: json.gasto ?? '—',
-        });
-        setUiState('success');
+        const data = {
+          fecha_pago: json.fecha_pago ?? '',
+          hora_pago: json.hora_pago ?? '',
+          matricula: json.matricula ?? '',
+          gasto: json.gasto ?? '',
+        };
+        setExtractedData(data);
+        setEditedData({ ...data });
+        setUiState('review');
       } else {
         throw new Error(json.message || 'La API procesó la solicitud pero devolvió un error');
       }
     } catch (err) {
-      // Captura errores de red, lectura de archivo o respuesta inesperada de la API
       setErrorMsg(err.message || 'Error de conexión. Comprueba la red e inténtalo de nuevo.');
       setUiState('error');
+    }
+  };
+
+  // ── Actualizar un campo del formulario editable ───────────────────────────
+  const handleFieldChange = (key, value) => {
+    setEditedData(prev => ({ ...prev, [key]: value }));
+  };
+
+  // ── PASO 2: Enviar los datos (editados) al Sheet ──────────────────────────
+  const handleSendToSheet = async () => {
+    if (!editedData) return;
+    setIsSending(true);
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          guardarDatos: true,
+          fecha_pago: editedData.fecha_pago,
+          hora_pago: editedData.hora_pago,
+          matricula: editedData.matricula,
+          gasto: editedData.gasto,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+      }
+
+      const text = await response.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        throw new Error('Respuesta inesperada del servidor.');
+      }
+
+      if (json.status === 'success') {
+        setUiState('success');
+      } else {
+        throw new Error(json.message || 'Error al guardar en Google Sheets');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Error de conexión al guardar.');
+      setUiState('error');
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -465,9 +549,11 @@ export default function TicketScanner() {
     setImageFile(null);
     setPreviewUrl(null);
     setExtractedData(null);
+    setEditedData(null);
     setErrorMsg('');
     setSheetOpen(false);
     setShowCamera(false);
+    setIsSending(false);
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -581,12 +667,12 @@ export default function TicketScanner() {
               </div>
 
               <div className="flex flex-col gap-2.5">
-                <button onClick={handleSubmit}
+                <button onClick={handleAnalyze}
                   className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700
                     text-white font-semibold w-full py-3.5 rounded-xl
                     transition-all duration-150 shadow-md hover:shadow-lg
                     focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
-                  Subir y Organizar
+                  Analizar ticket
                 </button>
                 <button onClick={() => setSheetOpen(true)}
                   className="text-slate-500 hover:text-slate-700 text-sm w-full py-2.5 rounded-xl
@@ -597,7 +683,7 @@ export default function TicketScanner() {
             </div>
           )}
 
-          {/* ── ESTADO 3: PROCESANDO ────────────────────────────────────────── */}
+          {/* ── ESTADO 3: PROCESANDO (OCR) ──────────────────────────────────── */}
           {uiState === 'loading' && (
             <div className="flex flex-col gap-4">
               {previewUrl && (
@@ -611,7 +697,7 @@ export default function TicketScanner() {
                   <IconSpinner />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-amber-800">Analizando la imagen…</p>
-                    <p className="text-xs text-amber-600 mt-0.5">Leyendo ticket y ordenando celdas en Sheets</p>
+                    <p className="text-xs text-amber-600 mt-0.5">Extrayendo datos del ticket con OCR</p>
                   </div>
                 </div>
                 <div className="mt-3 h-1.5 bg-amber-100 rounded-full overflow-hidden">
@@ -625,8 +711,112 @@ export default function TicketScanner() {
             </div>
           )}
 
-          {/* ── ESTADO 4: ÉXITO ─────────────────────────────────────────────── */}
-          {uiState === 'success' && extractedData && (
+          {/* ── ESTADO 4: REVISIÓN Y EDICIÓN ────────────────────────────────── */}
+          {uiState === 'review' && editedData && (
+            <div className="flex flex-col gap-4">
+              {/* Banner informativo */}
+              <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                  className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <div>
+                  <p className="text-xs font-semibold text-blue-800">Revisa y edita los datos</p>
+                  <p className="text-xs text-blue-600 mt-0.5 leading-relaxed">
+                    Toca cualquier campo para corregirlo antes de enviarlo a Google Sheets.
+                  </p>
+                </div>
+              </div>
+
+              {/* Imagen en miniatura */}
+              {previewUrl && (
+                <div className="relative rounded-xl overflow-hidden border border-slate-100 shadow-sm">
+                  <img src={previewUrl} alt="Ticket analizado"
+                    className="max-h-32 w-full object-cover" />
+                  <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs
+                    rounded-full px-2.5 py-1 backdrop-blur-sm font-medium flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                      className="w-3 h-3" aria-hidden="true">
+                      <path d="M2 12l5 5L22 4" />
+                    </svg>
+                    Analizado
+                  </div>
+                </div>
+              )}
+
+              {/* Formulario editable con 4 campos en grid */}
+              <div className="grid grid-cols-2 gap-2">
+                <EditField
+                  icon={<IconCalendar />}
+                  label="Fecha Pago"
+                  fieldKey="fecha_pago"
+                  value={editedData.fecha_pago}
+                  onChange={handleFieldChange}
+                />
+                <EditField
+                  icon={<IconClock />}
+                  label="Hora Pago"
+                  fieldKey="hora_pago"
+                  value={editedData.hora_pago}
+                  onChange={handleFieldChange}
+                />
+                <EditField
+                  icon={<IconCar />}
+                  label="Matrícula"
+                  fieldKey="matricula"
+                  value={editedData.matricula}
+                  onChange={handleFieldChange}
+                  mono
+                />
+                <EditField
+                  icon={<IconMoney />}
+                  label="Gasto"
+                  fieldKey="gasto"
+                  value={editedData.gasto}
+                  onChange={handleFieldChange}
+                />
+              </div>
+
+              {/* Botones de acción */}
+              <div className="flex flex-col gap-2.5">
+                <button
+                  onClick={handleSendToSheet}
+                  disabled={isSending}
+                  className={`flex items-center justify-center gap-2
+                    text-white font-semibold w-full py-3.5 rounded-xl
+                    transition-all duration-150 shadow-md hover:shadow-lg
+                    focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2
+                    ${isSending
+                      ? 'bg-emerald-300 cursor-not-allowed'
+                      : 'bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700'}`}
+                >
+                  {isSending ? (
+                    <>
+                      <IconSpinner />
+                      Enviando…
+                    </>
+                  ) : (
+                    <>
+                      <IconSend />
+                      Enviar al Sheet
+                    </>
+                  )}
+                </button>
+                <button onClick={() => setUiState('preview')}
+                  className="text-slate-500 hover:text-slate-700 text-sm w-full py-2.5 rounded-xl
+                    hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300">
+                  ← Volver a la imagen
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── ESTADO 5: ÉXITO ─────────────────────────────────────────────── */}
+          {uiState === 'success' && editedData && (
             <div className="flex flex-col gap-4">
               <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
                 <div className="flex items-center gap-3 mb-3">
@@ -637,10 +827,10 @@ export default function TicketScanner() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <DataRow icon={<IconCalendar />} label="Fecha Pago" value={extractedData.fecha_pago} />
-                  <DataRow icon={<IconClock />} label="Hora Pago" value={extractedData.hora_pago} />
-                  <DataRow icon={<IconCar />} label="Matrícula" value={extractedData.matricula} mono />
-                  <DataRow icon={<IconMoney />} label="Gasto" value={extractedData.gasto} bold />
+                  <DataRow icon={<IconCalendar />} label="Fecha Pago" value={editedData.fecha_pago} />
+                  <DataRow icon={<IconClock />} label="Hora Pago" value={editedData.hora_pago} />
+                  <DataRow icon={<IconCar />} label="Matrícula" value={editedData.matricula} mono />
+                  <DataRow icon={<IconMoney />} label="Gasto" value={editedData.gasto} bold />
                 </div>
               </div>
               <button onClick={handleReset}
