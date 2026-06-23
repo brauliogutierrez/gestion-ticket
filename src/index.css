@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 /* ── Reset mínimo — Tailwind gestiona el resto ─────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -15,10 +17,12 @@
   color-scheme: light;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
-  background: #f8fafc; /* slate-50 — nunca negro */
+  background: #f8fafc;
+  /* slate-50 — nunca negro */
   min-height: 100%;
 }
 

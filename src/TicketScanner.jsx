@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import logo from './assets/logo.png';
+import Tesseract from 'tesseract.js';
+import { parseOcrText } from './utils/ocrParser';
 
 // ─── Endpoint del Apps Script de Google Sheets ─────────────────────────────
 const API_URL = "https://script.google.com/macros/s/AKfycbzHMAHASEwwhX-Ka23BnX--Lasq7X4Nm6Lf3SV8B9BmAc7-h5Jc_y1RAVozytgijvXWXQ/exec";
@@ -390,7 +392,6 @@ export default function TicketScanner() {
   const [uiState, setUiState] = useState('idle');
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [extractedData, setExtractedData] = useState(null);
   const [editedData, setEditedData] = useState(null);  // ← datos editables por el usuario
   const [errorMsg, setErrorMsg] = useState('');
   const [isDragging, setIsDragging] = useState(false);
@@ -401,16 +402,73 @@ export default function TicketScanner() {
   const galleryInputRef = useRef(null);  // solo galería (sin capture)
 
   // ── Manejo de archivo seleccionado (galería o captura) ────────────────────
-  const handleFileSelect = (file) => {
+  const handleFileSelect = async (file) => {
     if (!file || !file.type.startsWith('image/')) return;
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
-    setUiState('preview');
+    setUiState('loading');
     setErrorMsg('');
-    setExtractedData(null);
     setEditedData(null);
     setSheetOpen(false);
     setShowCamera(false);
+
+    try {
+      // Realizar OCR local con Tesseract.js
+      const result = await Tesseract.recognize(
+        file,
+        'spa', // Reconocer español
+        {
+          logger: (m) => console.log('Progreso OCR:', m)
+        }
+      );
+      
+      const text = result?.data?.text || '';
+      console.log('Texto extraído por OCR:', text);
+
+      // Parsear el texto extraído con expresiones regulares
+      const parsedData = parseOcrText(text);
+
+      // Obtener valores por defecto para los campos que no se hayan extraído
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const fechaActual = `${day}/${month}/${year}`;
+
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const horaActual = `${hours}:${minutes}`;
+
+      setEditedData({
+        fecha_pago: parsedData.fecha_pago || fechaActual,
+        hora_pago: parsedData.hora_pago || horaActual,
+        matricula: parsedData.matricula || '',
+        gasto: parsedData.gasto || '',
+      });
+      
+      setUiState('review');
+    } catch (err) {
+      console.error('Error durante el OCR:', err);
+      // En caso de error crítico de OCR, dejamos los campos por defecto y vamos a review
+      // para que el usuario pueda escribir manualmente de todos modos sin bloquearse.
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const fechaActual = `${day}/${month}/${year}`;
+
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const horaActual = `${hours}:${minutes}`;
+
+      setEditedData({
+        fecha_pago: fechaActual,
+        hora_pago: horaActual,
+        matricula: '',
+        gasto: '',
+      });
+      setUiState('review');
+    }
   };
 
   const handleInputChange = (e) => {
@@ -441,67 +499,13 @@ export default function TicketScanner() {
     if (file) handleFileSelect(file);
   };
 
-  // ── PASO 1: Analizar imagen con OCR → mostrar formulario editable ─────────
-  const handleAnalyze = async () => {
-    if (!imageFile) return;
-    setUiState('loading');
-
-    try {
-      const base64Clean = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = () => reject(new Error('Error al leer el archivo de imagen'));
-        reader.readAsDataURL(imageFile);
-      });
-
-      const fileType = imageFile.type;
-
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ imagenB64: base64Clean, tipoMime: fileType, soloOCR: true }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
-      }
-
-      const text = await response.text();
-      console.log('Respuesta cruda de la API:', text);
-
-      let json;
-      try {
-        json = JSON.parse(text);
-      } catch (parseErr) {
-        throw new Error('La respuesta de Google Apps Script no es un JSON válido (posiblemente devolvió un error HTML 403 o de autenticación). Revisa la consola del navegador.');
-      }
-
-      if (json.status === 'success') {
-        const data = {
-          fecha_pago: json.fecha_pago ?? '',
-          hora_pago: json.hora_pago ?? '',
-          matricula: json.matricula ?? '',
-          gasto: json.gasto ?? '',
-        };
-        setExtractedData(data);
-        setEditedData({ ...data });
-        setUiState('review');
-      } else {
-        throw new Error(json.message || 'La API procesó la solicitud pero devolvió un error');
-      }
-    } catch (err) {
-      setErrorMsg(err.message || 'Error de conexión. Comprueba la red e inténtalo de nuevo.');
-      setUiState('error');
-    }
-  };
-
   // ── Actualizar un campo del formulario editable (siempre en MAYÚSCULAS) ──
   const handleFieldChange = (key, value) => {
     const upperValue = value.replace(/[a-z]/g, (c) => c.toUpperCase());
     setEditedData(prev => ({ ...prev, [key]: upperValue }));
   };
 
-  // ── PASO 2: Enviar los datos (editados) al Sheet ──────────────────────────
+  // ── Enviar los datos (editados) al Sheet ──────────────────────────
   const handleSendToSheet = async () => {
     if (!editedData) return;
     setIsSending(true);
@@ -549,7 +553,6 @@ export default function TicketScanner() {
     setUiState('idle');
     setImageFile(null);
     setPreviewUrl(null);
-    setExtractedData(null);
     setEditedData(null);
     setErrorMsg('');
     setSheetOpen(false);
@@ -649,46 +652,11 @@ export default function TicketScanner() {
             </div>
           )}
 
-          {/* ── ESTADO 2: VISTA PREVIA ──────────────────────────────────────── */}
-          {uiState === 'preview' && previewUrl && (
-            <div className="flex flex-col gap-4">
-              <div className="relative rounded-xl overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
-                <img src={previewUrl} alt="Vista previa del ticket"
-                  className="max-h-60 w-full object-cover" />
-                <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs
-                  rounded-full px-2.5 py-1 backdrop-blur-sm font-medium">Vista previa</div>
-              </div>
-
-              <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
-                <IconTicket />
-                <span className="text-xs text-slate-500 truncate flex-1">{imageFile?.name}</span>
-                <span className="text-xs text-slate-400 shrink-0">
-                  {imageFile ? (imageFile.size / 1024).toFixed(0) + ' KB' : ''}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2.5">
-                <button onClick={handleAnalyze}
-                  className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700
-                    text-white font-semibold w-full py-3.5 rounded-xl
-                    transition-all duration-150 shadow-md hover:shadow-lg
-                    focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
-                  Analizar ticket
-                </button>
-                <button onClick={() => setSheetOpen(true)}
-                  className="text-slate-500 hover:text-slate-700 text-sm w-full py-2.5 rounded-xl
-                    hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300">
-                  Cambiar imagen
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* ── ESTADO 3: PROCESANDO (OCR) ──────────────────────────────────── */}
           {uiState === 'loading' && (
             <div className="flex flex-col gap-4">
               {previewUrl && (
-                <div className="relative rounded-xl overflow-hidden border border-slate-100">
+                <div className="relative rounded-xl overflow-hidden border border-slate-100 shadow-sm">
                   <img src={previewUrl} alt="Procesando"
                     className="max-h-60 w-full object-cover opacity-40 blur-[1px]" />
                 </div>
@@ -697,8 +665,8 @@ export default function TicketScanner() {
                 <div className="flex items-center gap-3">
                   <IconSpinner />
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-amber-800">Analizando la imagen…</p>
-                    <p className="text-xs text-amber-600 mt-0.5">Extrayendo datos del ticket con OCR</p>
+                    <p className="text-sm font-semibold text-amber-800">Leyendo el ticket…</p>
+                    <p className="text-xs text-amber-600 mt-0.5">Escaneando texto de forma local y privada</p>
                   </div>
                 </div>
                 <div className="mt-3 h-1.5 bg-amber-100 rounded-full overflow-hidden">
@@ -707,7 +675,7 @@ export default function TicketScanner() {
               </div>
               <button disabled
                 className="bg-slate-100 text-slate-400 font-semibold w-full py-3.5 rounded-xl cursor-not-allowed">
-                Procesando…
+                Procesando imagen…
               </button>
             </div>
           )}
@@ -725,9 +693,9 @@ export default function TicketScanner() {
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
                 <div>
-                  <p className="text-xs font-semibold text-blue-800">Revisa y edita los datos</p>
+                  <p className="text-xs font-semibold text-blue-800">Completa los datos del ticket</p>
                   <p className="text-xs text-blue-600 mt-0.5 leading-relaxed">
-                    Toca cualquier campo para corregirlo antes de enviarlo a Google Sheets.
+                    Escribe la información del ticket que ves en la imagen de referencia.
                   </p>
                 </div>
               </div>
@@ -735,16 +703,17 @@ export default function TicketScanner() {
               {/* Imagen en miniatura */}
               {previewUrl && (
                 <div className="relative rounded-xl overflow-hidden border border-slate-100 shadow-sm">
-                  <img src={previewUrl} alt="Ticket analizado"
+                  <img src={previewUrl} alt="Ticket de referencia"
                     className="max-h-32 w-full object-cover" />
                   <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs
                     rounded-full px-2.5 py-1 backdrop-blur-sm font-medium flex items-center gap-1.5">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                       className="w-3 h-3" aria-hidden="true">
-                      <path d="M2 12l5 5L22 4" />
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
-                    Analizado
+                    Referencia
                   </div>
                 </div>
               )}
@@ -807,10 +776,10 @@ export default function TicketScanner() {
                     </>
                   )}
                 </button>
-                <button onClick={() => setUiState('preview')}
+                <button onClick={handleReset}
                   className="text-slate-500 hover:text-slate-700 text-sm w-full py-2.5 rounded-xl
                     hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300">
-                  ← Volver a la imagen
+                  ← Elegir otra imagen
                 </button>
               </div>
             </div>
@@ -842,7 +811,7 @@ export default function TicketScanner() {
 
               {/* Pregunta al usuario */}
               <div className="text-center">
-                <p className="text-sm font-medium text-slate-600 mb-3">¿Quieres escanear otro ticket?</p>
+                <p className="text-sm font-medium text-slate-600 mb-3">¿Quieres registrar otro ticket?</p>
                 <div className="flex flex-col gap-2">
                   <button onClick={handleReset}
                     className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700
@@ -851,7 +820,7 @@ export default function TicketScanner() {
                       focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2
                       flex items-center justify-center gap-2">
                     <IconCamera className="w-4 h-4" />
-                    Sí, escanear otro
+                    Sí, registrar otro
                   </button>
                   <p className="text-xs text-slate-400">O cierra la aplicación si has terminado</p>
                 </div>
@@ -866,18 +835,18 @@ export default function TicketScanner() {
                 <div className="flex items-start gap-3">
                   <IconAlert />
                   <div>
-                    <p className="text-sm font-semibold text-red-700">Error al procesar</p>
+                    <p className="text-sm font-semibold text-red-700">Error al guardar</p>
                     <p className="text-xs text-red-600 mt-1 leading-relaxed">{errorMsg}</p>
                   </div>
                 </div>
               </div>
               <div className="flex flex-col gap-2.5">
-                <button onClick={handleAnalyze}
+                <button onClick={handleSendToSheet}
                   className="bg-red-500 hover:bg-red-600 active:bg-red-700
                     text-white font-semibold w-full py-3.5 rounded-xl
                     transition-all duration-150 shadow-md
                     focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2">
-                  Reintentar
+                  Reintentar envío
                 </button>
                 <button onClick={handleReset}
                   className="text-slate-500 hover:text-slate-700 text-sm w-full py-2.5 rounded-xl
